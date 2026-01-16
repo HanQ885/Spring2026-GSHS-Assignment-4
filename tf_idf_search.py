@@ -16,17 +16,13 @@ def compute_tf(document: str) -> dict:
         - A dictionary representing the term frequency (TF) of each word in the document.
           e.g, tf = {'cats': 0.5, 'are': 0.25, 'small': 0.25}
     '''
-    tf = {}
-    tokens = tokenize(document)
-
-    # Compute term frequency (TF)
+    tf={}
+    tokens=tokenize(document)
     n=len(tokens)
     for w in tokens:
         tf[w]=tf.get(w,0)+1
     for w in tf:
         tf[w]=tf[w]/n
-
-
     return tf
 
 def compute_idf(docs: list[str]) -> dict:
@@ -39,23 +35,17 @@ def compute_idf(docs: list[str]) -> dict:
         - A dictionary representing the inverse document frequency (IDF) of each word.
           e.g, idf = {'cats': 1.0, 'are': 0.5, 'small': 0.5}
     '''
-    idf = {}
-    N = len(docs)
-    all_words = set()
-
+    idf={}
+    N=len(docs)
+    all_words=set()
     for doc in docs:
         all_words.update(tokenize(doc))
-
-    # Compute inverse document frequency (IDF), given entire vocabulary \
-    # from all the documents (all_words)
     for w in all_words:
         df=0
-    for doc in docs:
-        if w in set(tokenize(doc)):
-            df+=1
-    idf[w]=math.log(N/df)
-
-
+        for doc in docs:
+            if w in set(tokenize(doc)):
+                df+=1
+        idf[w]=math.log(N/df)
     return idf
 
 def compute_tf_idf(document: str, idf: dict) -> dict:
@@ -69,16 +59,11 @@ def compute_tf_idf(document: str, idf: dict) -> dict:
         - A dictionary representing the TF-IDF of each word in the document.
           e.g, tf_idf = {'cats': 0.5, 'are': 0.25, 'small': 0.25}
     '''
-    tf_idf = {}
-    tf = compute_tf(document)
-
-    # Compute TF-IDF
+    tf_idf={}
+    tf=compute_tf(document)
     for w,v in tf.items():
         tf_idf[w]=v*idf.get(w,0)
-
-
     return tf_idf
-
 
 def cosine_similarity(vec1: dict, vec2: dict) -> float:
     '''
@@ -90,17 +75,14 @@ def cosine_similarity(vec1: dict, vec2: dict) -> float:
     Returns:
         - The cosine similarity score (float).
     '''
-    dot = 0
+    dot=0
     for word in vec1:
-        dot += vec1[word] * vec2.get(word, 0)
-
-    mag1 = math.sqrt(sum(v * v for v in vec1.values()))
-    mag2 = math.sqrt(sum(v * v for v in vec2.values()))
-
-    if mag1 == 0 or mag2 == 0:
+        dot+=vec1[word]*vec2.get(word,0)
+    mag1=math.sqrt(sum(v*v for v in vec1.values()))
+    mag2=math.sqrt(sum(v*v for v in vec2.values()))
+    if mag1==0 or mag2==0:
         return 0
-
-    return dot / (mag1 * mag2)
+    return dot/(mag1*mag2)
 
 def tf_idf_search(query: str, documents: list[str]) -> str:
     '''
@@ -112,17 +94,12 @@ def tf_idf_search(query: str, documents: list[str]) -> str:
     Returns:
        - The most relevant document string.
     '''
-    idf = compute_idf(documents)
-    query_vec = compute_tf_idf(query, idf)
-    scores = []
-
-    # For each document, compute the cosine similarity with the query vector
+    idf=compute_idf(documents)
+    query_vec=compute_tf_idf(query,idf)
+    scores=[]
     for doc in documents:
-        doc_vec = compute_tf_idf(doc, idf)
-        score = cosine_similarity(query_vec, doc_vec)
-        scores.append((doc, score))
-
-    # Sort the documents by their score
-    scores.sort(key=lambda x: x[1], reverse=True)
-    # print(scores)
+        doc_vec=compute_tf_idf(doc,idf)
+        score=cosine_similarity(query_vec,doc_vec)
+        scores.append((doc,score))
+    scores.sort(key=lambda x:x[1],reverse=True)
     return scores[0][0]
